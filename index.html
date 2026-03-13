@@ -936,7 +936,7 @@ async function sendInvite(){
 }
 function renderColleagues(invites){
   const el=document.getElementById('colleague-list');
-  if(!invites||!invites.length){el.innerHTML='<div class="empty" style="padding:.75rem 0">Nog geen collega's uitgenodigd</div>';return;}
+  if(!invites||!invites.length){el.innerHTML='<div class="empty" style="padding:.75rem 0">Nog geen collega&#39;s uitgenodigd</div>';return;}
   el.innerHTML=invites.map(i=>{
     const initials=i.email.slice(0,2).toUpperCase();
     return`<div class="colleague-row">
