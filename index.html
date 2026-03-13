@@ -24,6 +24,7 @@
     --warning:#ba7517;--warning-bg:#faeeda;--warning-text:#412402;
     --info:#378add;--info-bg:#e6f1fb;--info-text:#042c53;
     --radius:8px;--radius-lg:12px;
+    --accent:#378add;
   }
   @media(prefers-color-scheme:dark){
     :root{
@@ -34,7 +35,26 @@
       --danger:#f09595;--danger-bg:#501313;--danger-text:#f7c1c1;
       --warning:#ef9f27;--warning-bg:#412402;--warning-text:#fac775;
       --info:#85b7eb;--info-bg:#042c53;--info-text:#b5d4f4;
+      --accent:#85b7eb;
     }
+  }
+  html[data-theme="light"]{
+    --bg:#ffffff;--bg2:#f5f5f3;--bg3:#efefec;
+    --text:#1a1a18;--text2:#6b6b66;--text3:#9a9a94;
+    --border:rgba(0,0,0,.12);--border2:rgba(0,0,0,.22);
+    --success:#1d9e75;--success-bg:#e1f5ee;--success-text:#085041;
+    --danger:#e24b4a;--danger-bg:#fcebeb;--danger-text:#501313;
+    --warning:#ba7517;--warning-bg:#faeeda;--warning-text:#412402;
+    --info:#378add;--info-bg:#e6f1fb;--info-text:#042c53;--accent:#378add;
+  }
+  html[data-theme="dark"]{
+    --bg:#1c1c1a;--bg2:#252523;--bg3:#2e2e2b;
+    --text:#e8e8e0;--text2:#9a9a94;--text3:#6b6b66;
+    --border:rgba(255,255,255,.12);--border2:rgba(255,255,255,.22);
+    --success:#5dcaa5;--success-bg:#04342c;--success-text:#9fe1cb;
+    --danger:#f09595;--danger-bg:#501313;--danger-text:#f7c1c1;
+    --warning:#ef9f27;--warning-bg:#412402;--warning-text:#fac775;
+    --info:#85b7eb;--info-bg:#042c53;--info-text:#b5d4f4;--accent:#85b7eb;
   }
   body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;color:var(--text);background:var(--bg2);min-height:100vh}
   .container{max-width:900px;margin:0 auto;padding:1rem}
@@ -148,6 +168,38 @@
   .pause-badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:var(--warning-bg);color:var(--warning-text);margin-left:6px}
   .loading{text-align:center;padding:2rem;color:var(--text2);font-size:13px}
 
+  .sort-btn{transition:background .15s,color .15s}
+  .active-sort{background:var(--text)!important;color:var(--bg)!important;border-color:var(--text)!important}
+  .fav-btn{font-size:16px;background:none;border:none;cursor:pointer;padding:2px 4px;line-height:1;color:var(--text3);transition:color .15s}
+  .fav-btn.on{color:#f5a623}
+  .proj-row.fav{border-color:rgba(245,166,35,.4);background:rgba(245,166,35,.05)}
+  .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem}
+  .modal-box{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;width:100%;max-width:500px}
+  .modal-title{font-size:16px;font-weight:500;margin-bottom:1rem}
+  .modal-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:.75rem}
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:1rem}
+  .btn-edit{color:var(--info);border-color:var(--info)}
+  .settings-section{margin-bottom:1.5rem}
+  .settings-label{font-size:12px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.75rem}
+  .settings-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--border);gap:12px}
+  .settings-row:last-child{border-bottom:none}
+  .settings-row-label{font-size:14px;font-weight:500}
+  .settings-row-sub{font-size:12px;color:var(--text2);margin-top:2px}
+  .theme-btns{display:flex;gap:6px}
+  .theme-btn{padding:5px 12px;border-radius:var(--radius);font-size:12px;border:0.5px solid var(--border2);cursor:pointer;background:transparent;color:var(--text);font-family:inherit;transition:all .15s}
+  .theme-btn.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+  .day-btns{display:flex;gap:4px;flex-wrap:wrap}
+  .day-btn{width:32px;height:32px;border-radius:50%;border:0.5px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;transition:all .15s;display:flex;align-items:center;justify-content:center}
+  .day-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .colleague-list{display:flex;flex-direction:column;gap:6px;margin-top:.5rem}
+  .colleague-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border:0.5px solid var(--border);border-radius:var(--radius);font-size:13px}
+  .colleague-avatar{width:28px;height:28px;border-radius:50%;background:var(--info-bg);color:var(--info-text);font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .colleague-name{flex:1;font-weight:500}
+  .colleague-email{font-size:12px;color:var(--text2)}
+  .colleague-status{font-size:11px;padding:2px 8px;border-radius:99px}
+  .status-pending{background:var(--warning-bg);color:var(--warning-text)}
+  .status-active{background:var(--success-bg);color:var(--success-text)}
+  .invite-row{display:flex;gap:8px;margin-top:.75rem}
   @media(max-width:600px){
     .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
     .entry-note,.entry-time{display:none}
@@ -197,6 +249,7 @@
       <button class="nav-btn active" onclick="showPage('registratie',this)">Registratie</button>
       <button class="nav-btn" onclick="showPage('week',this)">Weekoverzicht</button>
       <button class="nav-btn" onclick="showPage('projecten',this)">Projecten</button>
+      <button class="nav-btn" onclick="showPage('instellingen',this)">Instellingen</button>
     </div>
 
     <!-- REGISTRATIE -->
@@ -278,7 +331,15 @@
       </div>
 
       <div class="card">
-        <div class="card-title">Recente boekingen</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;flex-wrap:wrap;gap:8px">
+          <div class="card-title" style="margin:0">Boekingen</div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="font-size:12px;color:var(--text2)">Sorteren:</span>
+            <button class="btn-sm sort-btn active-sort" id="sort-datum" onclick="setSort('datum')">Datum</button>
+            <button class="btn-sm sort-btn" id="sort-tijd" onclick="setSort('tijd')">Tijd</button>
+            <button class="btn-sm sort-btn" id="sort-project" onclick="setSort('project')">Project</button>
+          </div>
+        </div>
         <div class="entries" id="entries-list"><div class="loading">Laden...</div></div>
       </div>
     </div>
@@ -309,8 +370,8 @@
         <div class="card-title">Nieuw project toevoegen</div>
         <div class="row">
           <div class="field" style="flex:2;min-width:140px"><label>Projectnaam</label><input type="text" id="p-name" placeholder="Naam"></div>
-          <div class="field" style="flex:1;min-width:100px"><label>Projectnummer</label><input type="text" id="p-num" placeholder="P-2024-01"></div>
-          <div class="field" style="flex:1;min-width:100px"><label>Financieel nr.</label><input type="text" id="p-fin" placeholder="FIN-001"></div>
+          <div class="field" style="flex:1;min-width:120px"><label>Projectnummer (PR)</label><input type="text" id="p-num" placeholder="PR000000"></div>
+          <div class="field" style="flex:1;min-width:120px"><label>Ref. (TX)</label><input type="text" id="p-fin" placeholder="TX.0000.0"></div>
           <div class="field" style="min-width:90px"><label>Urentegoed</label><input type="number" id="p-budget" placeholder="40" min="0" style="width:90px"></div>
           <button class="btn btn-inline" onclick="addProject()">Toevoegen</button>
         </div>
@@ -319,6 +380,88 @@
         <div class="card-title">Projecten</div>
         <div class="proj-list" id="proj-list"><div class="loading">Laden...</div></div>
       </div>
+    </div>
+
+    <!-- INSTELLINGEN -->
+    <div id="page-instellingen" class="page">
+
+      <div class="card">
+        <div class="settings-label">Profiel</div>
+        <div class="settings-section">
+          <div class="settings-row">
+            <div><div class="settings-row-label">Naam</div><div class="settings-row-sub" id="disp-name">—</div></div>
+            <button class="btn-sm" onclick="openProfileModal()">&#9998; Wijzigen</button>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-row-label">E-mailadres</div><div class="settings-row-sub" id="disp-email">—</div></div>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-row-label">Wachtwoord</div><div class="settings-row-sub">Verander je wachtwoord</div></div>
+            <button class="btn-sm" onclick="openPasswordModal()">&#9998; Wijzigen</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="settings-label">Weergave</div>
+        <div class="settings-section">
+          <div class="settings-row">
+            <div><div class="settings-row-label">Thema</div><div class="settings-row-sub">Licht, donker of automatisch</div></div>
+            <div class="theme-btns">
+              <button class="theme-btn" id="theme-light" onclick="setTheme('light')">&#9728; Licht</button>
+              <button class="theme-btn" id="theme-dark" onclick="setTheme('dark')">&#9790; Donker</button>
+              <button class="theme-btn active" id="theme-system" onclick="setTheme('system')">&#8861; Systeem</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="settings-label">Tijdregistratie</div>
+        <div class="settings-section">
+          <div class="settings-row">
+            <div><div class="settings-row-label">Standaard pauzetijd</div><div class="settings-row-sub">Vooringestelde waarde bij de pauze-toggle</div></div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <input type="number" id="set-pause" min="0" max="120" value="30" style="width:64px;text-align:center" oninput="saveSetting('defaultPause',this.value)">
+              <span style="font-size:13px;color:var(--text2)">min</span>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-row-label">Werkdagen</div><div class="settings-row-sub">Dagen die meetellen in het weekoverzicht</div></div>
+            <div class="day-btns" id="day-btns">
+              <button class="day-btn active" data-day="1" onclick="toggleDay(this)">Ma</button>
+              <button class="day-btn active" data-day="2" onclick="toggleDay(this)">Di</button>
+              <button class="day-btn active" data-day="3" onclick="toggleDay(this)">Wo</button>
+              <button class="day-btn active" data-day="4" onclick="toggleDay(this)">Do</button>
+              <button class="day-btn active" data-day="5" onclick="toggleDay(this)">Vr</button>
+              <button class="day-btn" data-day="6" onclick="toggleDay(this)">Za</button>
+              <button class="day-btn" data-day="0" onclick="toggleDay(this)">Zo</button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-row-label">Uren per werkdag</div><div class="settings-row-sub">Normaal te werken uren per dag</div></div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <input type="number" id="set-hours" min="1" max="24" value="8" style="width:64px;text-align:center" oninput="saveSetting('hoursPerDay',this.value)">
+              <span style="font-size:13px;color:var(--text2)">u/dag</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="settings-label">Collega's</div>
+        <div class="settings-section">
+          <div style="font-size:13px;color:var(--text2);margin-bottom:.75rem">Nodig collega's uit om de app te gebruiken. Ieders data staat los opgeslagen.</div>
+          <div class="invite-row">
+            <input type="email" id="invite-email" placeholder="collega@nordomatic.nl" style="flex:1">
+            <button class="btn btn-inline" onclick="sendInvite()">Uitnodigen</button>
+          </div>
+          <div class="colleague-list" id="colleague-list">
+            <div class="empty" style="padding:.75rem 0">Nog geen collega's uitgenodigd</div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
   </div>
@@ -412,6 +555,8 @@ function subscribeData(){
   if(unsubProjects)unsubProjects();
   if(unsubEntries)unsubEntries();
 
+  updateProfileDisplay();
+  loadSettings();
   unsubProjects = db.collection('users').doc(currentUser.uid).collection('projects')
     .orderBy('name').onSnapshot(snap=>{
       projects = snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -555,7 +700,7 @@ function deleteEntry(id){deleteEntryDb(id);}
 function addProject(){
   const name=document.getElementById('p-name').value.trim();
   if(!name)return;
-  saveProject({name,num:document.getElementById('p-num').value.trim(),fin:document.getElementById('p-fin').value.trim(),budget:parseInt(document.getElementById('p-budget').value)||0});
+  saveProject({name,num:document.getElementById('p-num').value.trim(),fin:document.getElementById('p-fin').value.trim(),budget:parseInt(document.getElementById('p-budget').value)||0,fav:false});
   ['p-name','p-num','p-fin'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('p-budget').value='';
 }
@@ -566,7 +711,8 @@ function minutesForProject(pid){return entries.filter(e=>e.projectId===pid).redu
 
 // ── Render ────────────────────────────────────────────────
 function populateSelects(){
-  const opts='<option value="">-- Kies project --</option>'+projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  const sorted=[...projects].sort((a,b)=>(b.fav?1:0)-(a.fav?1:0)||a.name.localeCompare(b.name));
+  const opts='<option value="">-- Kies project --</option>'+sorted.map(p=>`<option value="${p.id}">${p.fav?'★ ':''}${p.name}</option>`).join('');
   ['t-project','t-next-project','m-project'].forEach(id=>document.getElementById(id).innerHTML=opts);
   if(timerProjectId)document.getElementById('t-project').value=timerProjectId;
 }
@@ -582,10 +728,23 @@ function renderStats(){
   document.getElementById('s-month').textContent=fmtH(month);
 }
 
+let currentSort='datum';
+function setSort(s){
+  currentSort=s;
+  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active-sort'));
+  document.getElementById('sort-'+s).classList.add('active-sort');
+  renderEntries();
+}
 function renderEntries(){
   const el=document.getElementById('entries-list');
   if(!entries.length){el.innerHTML='<div class="empty">Nog geen boekingen</div>';return;}
-  el.innerHTML=entries.slice(0,20).map(e=>{
+  const sorted=[...entries].sort((a,b)=>{
+    if(currentSort==='datum') return (b.date||'').localeCompare(a.date||'')||((b.startTime||'').localeCompare(a.startTime||''));
+    if(currentSort==='tijd') return (b.startTime||'').localeCompare(a.startTime||'');
+    if(currentSort==='project'){const pa=getProjectById(a.projectId).name||'';const pb=getProjectById(b.projectId).name||'';return pa.localeCompare(pb)||(b.date||'').localeCompare(a.date||'');}
+    return 0;
+  });
+  el.innerHTML=sorted.map(e=>{
     const p=getProjectById(e.projectId);
     const pauseTag=e.pauseMinutes>0?`<span class="pause-badge">-${e.pauseMinutes}m pauze</span>`:'';
     return`<div class="entry-row">
@@ -594,6 +753,7 @@ function renderEntries(){
       <span class="entry-time">${e.startTime||''} ${e.endTime?'&#8211; '+e.endTime:''}</span>
       <span class="entry-dur">${fmtH(e.minutes)}</span>
       <span class="entry-note">${e.note||''}${pauseTag}</span>
+      <button class="btn-sm btn-edit" onclick="openEditEntry('${e.id}')">&#9998;</button>
       <button class="btn-sm btn-danger" onclick="deleteEntry('${e.id}')">&#10005;</button>
     </div>`;
   }).join('');
@@ -640,7 +800,7 @@ function renderWeek(){
   if(!wpEl)return;
   const sorted=Object.entries(projMins).sort((a,b)=>b[1]-a[1]);
   if(!sorted.length){wpEl.innerHTML='<div class="empty">Geen boekingen deze week</div>';return;}
-  wpEl.innerHTML=sorted.map(([pid,mins])=>{const p=getProjectById(pid);const pct=totalMins>0?Math.round(mins/totalMins*100):0;return`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px"><span style="font-weight:500">${p.name}</span><span style="color:var(--text2)">${fmtH(mins)} &bull; ${pct}%</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--info)"></div></div></div>`;}).join('');
+  wpEl.innerHTML=sorted.map(([pid,mins])=>{const p=getProjectById(pid);const pct=totalMins>0?Math.round(mins/totalMins*100):0;const numTag=p.num?` <span style="font-size:11px;color:var(--text2)">PR: ${p.num}</span>`:'';return`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px"><span><span style="font-weight:500">${p.name}</span>${numTag}</span><span style="color:var(--text2)">${fmtH(mins)} &bull; ${pct}%</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--info)"></div></div></div>`;}).join('');
 }
 
 function changeWeek(dir){currentWeekOffset+=dir;renderWeek();}
@@ -649,13 +809,221 @@ function renderProjects(){
   const el=document.getElementById('proj-list');
   if(!el)return;
   if(!projects.length){el.innerHTML='<div class="empty">Nog geen projecten aangemaakt</div>';return;}
-  el.innerHTML=projects.map(p=>{
+  const sorted=[...projects].sort((a,b)=>(b.fav?1:0)-(a.fav?1:0)||a.name.localeCompare(b.name));
+  el.innerHTML=sorted.map(p=>{
     const usedH=parseFloat((minutesForProject(p.id)/60).toFixed(1));
     const pct=p.budget>0?Math.min(100,Math.round(usedH/p.budget*100)):0;
     const cls=pct>=100?'budget-over':pct>=80?'budget-warn':'budget-ok';
-    return`<div class="proj-row"><div class="proj-name">${p.name}</div><div class="proj-meta">${p.num?'#'+p.num:''}${p.num&&p.fin?' &bull; ':''} ${p.fin?'FIN: '+p.fin:''}</div><div class="proj-budget"><div class="${cls}" style="font-size:13px;font-weight:500">${usedH}u / ${p.budget}u</div>${p.budget>0?`<div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${pct>=100?'var(--danger)':pct>=80?'var(--warning)':'var(--success)'}"></div></div>`:''}</div><button class="btn-sm btn-danger" onclick="deleteProject('${p.id}')">&#10005;</button></div>`;
+    const meta=[p.num?'PR: '+p.num:'',p.fin?'Ref: '+p.fin:''].filter(Boolean).join(' &bull; ');
+    return`<div class="proj-row${p.fav?' fav':''}">
+      <button class="fav-btn${p.fav?' on':''}" onclick="toggleFav('${p.id}')" title="Favoriet">${p.fav?'★':'☆'}</button>
+      <div class="proj-name">${p.name}</div>
+      <div class="proj-meta">${meta}</div>
+      <div class="proj-budget">
+        <div class="${cls}" style="font-size:13px;font-weight:500">${usedH}u / ${p.budget}u</div>
+        ${p.budget>0?`<div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${pct>=100?'var(--danger)':pct>=80?'var(--warning)':'var(--success)'}"></div></div>`:''}
+      </div>
+      <button class="btn-sm btn-edit" onclick="openEditProject('${p.id}')">&#9998;</button>
+      <button class="btn-sm btn-danger" onclick="deleteProject('${p.id}')">&#10005;</button>
+    </div>`;
   }).join('');
 }
+// ── Theme ─────────────────────────────────────────────────
+let currentTheme='system';
+function setTheme(t){
+  currentTheme=t;
+  ['light','dark','system'].forEach(x=>document.getElementById('theme-'+x).classList.toggle('active',x===t));
+  if(t==='system'){document.documentElement.removeAttribute('data-theme');}
+  else{document.documentElement.setAttribute('data-theme',t);}
+  localStorage.setItem('theme',t);
+  if(currentUser)db.collection('users').doc(currentUser.uid).collection('settings').doc('prefs').set({theme:t},{merge:true});
+}
+function applyStoredTheme(){
+  const t=localStorage.getItem('theme')||'system';
+  setTheme(t);
+}
+applyStoredTheme();
+
+// ── Settings persistence ──────────────────────────────────
+let userSettings={defaultPause:30,hoursPerDay:8,workDays:[1,2,3,4,5]};
+async function loadSettings(){
+  if(!currentUser)return;
+  try{
+    const doc=await db.collection('users').doc(currentUser.uid).collection('settings').doc('prefs').get();
+    if(doc.exists){
+      const d=doc.data();
+      if(d.theme)setTheme(d.theme);
+      if(d.defaultPause!=null){userSettings.defaultPause=d.defaultPause;document.getElementById('set-pause').value=d.defaultPause;document.getElementById('pause-mins').value=d.defaultPause;}
+      if(d.hoursPerDay!=null){userSettings.hoursPerDay=d.hoursPerDay;document.getElementById('set-hours').value=d.hoursPerDay;}
+      if(d.workDays){userSettings.workDays=d.workDays;applyWorkDays(d.workDays);}
+      if(d.invites)renderColleagues(d.invites);
+    }
+  }catch(e){}
+}
+async function saveSetting(key,val){
+  const v=key==='defaultPause'||key==='hoursPerDay'?parseInt(val):val;
+  userSettings[key]=v;
+  if(key==='defaultPause')document.getElementById('pause-mins').value=v;
+  if(!currentUser)return;
+  await db.collection('users').doc(currentUser.uid).collection('settings').doc('prefs').set({[key]:v},{merge:true});
+}
+function applyWorkDays(days){
+  document.querySelectorAll('.day-btn').forEach(b=>{
+    b.classList.toggle('active',days.includes(parseInt(b.dataset.day)));
+  });
+}
+function toggleDay(btn){
+  const day=parseInt(btn.dataset.day);
+  let days=[...userSettings.workDays];
+  if(days.includes(day))days=days.filter(d=>d!==day); else days.push(day);
+  userSettings.workDays=days;
+  applyWorkDays(days);
+  saveSetting('workDays',days);
+}
+
+// ── Profile ───────────────────────────────────────────────
+function updateProfileDisplay(){
+  if(!currentUser)return;
+  document.getElementById('disp-name').textContent=currentUser.displayName||'—';
+  document.getElementById('disp-email').textContent=currentUser.email||'—';
+}
+function openProfileModal(){
+  document.getElementById('prof-name').value=currentUser.displayName||'';
+  document.getElementById('profile-modal').style.display='flex';
+}
+function closeProfileModal(){document.getElementById('profile-modal').style.display='none';}
+async function saveProfile(){
+  const name=document.getElementById('prof-name').value.trim();
+  if(!name)return;
+  await currentUser.updateProfile({displayName:name});
+  document.getElementById('user-email-display').textContent=name;
+  updateProfileDisplay();
+  closeProfileModal();
+}
+document.getElementById('profile-modal').addEventListener('click',function(e){if(e.target===this)closeProfileModal();});
+
+// ── Password ──────────────────────────────────────────────
+function openPasswordModal(){
+  document.getElementById('pw-new').value='';
+  document.getElementById('pw-confirm').value='';
+  document.getElementById('pw-error').style.display='none';
+  document.getElementById('password-modal').style.display='flex';
+}
+function closePasswordModal(){document.getElementById('password-modal').style.display='none';}
+async function savePassword(){
+  const nw=document.getElementById('pw-new').value;
+  const cf=document.getElementById('pw-confirm').value;
+  const err=document.getElementById('pw-error');
+  err.style.display='none';
+  if(nw.length<6){err.textContent='Wachtwoord moet minimaal 6 tekens zijn.';err.style.display='block';return;}
+  if(nw!==cf){err.textContent='Wachtwoorden komen niet overeen.';err.style.display='block';return;}
+  try{await currentUser.updatePassword(nw);closePasswordModal();}
+  catch(e){err.textContent=e.message;err.style.display='block';}
+}
+document.getElementById('password-modal').addEventListener('click',function(e){if(e.target===this)closePasswordModal();});
+
+// ── Colleagues / Invites ──────────────────────────────────
+async function sendInvite(){
+  const email=document.getElementById('invite-email').value.trim().toLowerCase();
+  if(!email||!email.includes('@'))return;
+  const doc=await db.collection('users').doc(currentUser.uid).collection('settings').doc('prefs').get();
+  const existing=doc.exists&&doc.data().invites||[];
+  if(existing.find(i=>i.email===email))return;
+  const invites=[...existing,{email,status:'uitgenodigd',date:new Date().toISOString().slice(0,10)}];
+  await db.collection('users').doc(currentUser.uid).collection('settings').doc('prefs').set({invites},{merge:true});
+  document.getElementById('invite-email').value='';
+  renderColleagues(invites);
+}
+function renderColleagues(invites){
+  const el=document.getElementById('colleague-list');
+  if(!invites||!invites.length){el.innerHTML='<div class="empty" style="padding:.75rem 0">Nog geen collega's uitgenodigd</div>';return;}
+  el.innerHTML=invites.map(i=>{
+    const initials=i.email.slice(0,2).toUpperCase();
+    return`<div class="colleague-row">
+      <div class="colleague-avatar">${initials}</div>
+      <div style="flex:1"><div class="colleague-name">${i.email}</div><div class="colleague-email">Uitgenodigd op ${i.date||'—'}</div></div>
+      <span class="colleague-status status-pending">${i.status}</span>
+    </div>`;
+  }).join('');
+}
+
+// ── Hook into auth state ──────────────────────────────────
+const _origAuthState=auth.onAuthStateChanged.bind(auth);
+
 </script>
+<!-- EDIT ENTRY MODAL -->
+<div id="edit-modal" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-title">Boeking aanpassen</div>
+    <input type="hidden" id="edit-id">
+    <div class="modal-row">
+      <div class="field"><label>Datum</label><input type="date" id="edit-date" style="width:140px"></div>
+      <div class="field" style="flex:1.5;min-width:140px"><label>Project</label><select id="edit-project"></select></div>
+    </div>
+    <div class="modal-row">
+      <div class="field"><label>Van</label><input type="time" id="edit-start" style="width:100px"></div>
+      <div class="field"><label>Tot</label><input type="time" id="edit-end" style="width:100px"></div>
+      <div class="field"><label>Pauze (min)</label><input type="number" id="edit-pause" min="0" style="width:80px"></div>
+    </div>
+    <div class="modal-row">
+      <div class="field" style="flex:1"><label>Omschrijving</label><input type="text" id="edit-note" placeholder="Optioneel"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline btn-inline" onclick="closeEditEntry()">Annuleren</button>
+      <button class="btn btn-inline" onclick="saveEditEntry()">Opslaan</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT PROJECT MODAL -->
+<div id="edit-proj-modal" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-title">Project aanpassen</div>
+    <input type="hidden" id="ep-id">
+    <div class="modal-row">
+      <div class="field" style="flex:2;min-width:140px"><label>Projectnaam</label><input type="text" id="ep-name" placeholder="Naam"></div>
+    </div>
+    <div class="modal-row">
+      <div class="field" style="flex:1;min-width:120px"><label>Projectnummer (PR)</label><input type="text" id="ep-num" placeholder="PR000000"></div>
+      <div class="field" style="flex:1;min-width:120px"><label>Ref. (TX)</label><input type="text" id="ep-fin" placeholder="TX.0000.0"></div>
+      <div class="field" style="min-width:90px"><label>Urentegoed</label><input type="number" id="ep-budget" min="0" style="width:90px"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline btn-inline" onclick="closeEditProject()">Annuleren</button>
+      <button class="btn btn-inline" onclick="saveEditProject()">Opslaan</button>
+    </div>
+  </div>
+</div>
+<!-- PROFILE MODAL -->
+<div id="profile-modal" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-title">Profielgegevens wijzigen</div>
+    <div class="modal-row">
+      <div class="field" style="flex:1"><label>Naam</label><input type="text" id="prof-name" placeholder="Jouw naam"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline btn-inline" onclick="closeProfileModal()">Annuleren</button>
+      <button class="btn btn-inline" onclick="saveProfile()">Opslaan</button>
+    </div>
+  </div>
+</div>
+
+<!-- PASSWORD MODAL -->
+<div id="password-modal" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-title">Wachtwoord wijzigen</div>
+    <div class="auth-error" id="pw-error" style="display:none"></div>
+    <div class="modal-row">
+      <div class="field" style="flex:1"><label>Nieuw wachtwoord</label><input type="password" id="pw-new" placeholder="Minimaal 6 tekens"></div>
+    </div>
+    <div class="modal-row">
+      <div class="field" style="flex:1"><label>Herhaal wachtwoord</label><input type="password" id="pw-confirm" placeholder="Herhaal wachtwoord"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline btn-inline" onclick="closePasswordModal()">Annuleren</button>
+      <button class="btn btn-inline" onclick="savePassword()">Opslaan</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
