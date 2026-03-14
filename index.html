@@ -153,16 +153,11 @@
 
   .week-nav{display:flex;align-items:center;gap:12px;margin-bottom:1rem}
   .week-label{font-size:14px;font-weight:500;flex:1;text-align:center}
-  .week-table{width:100%;border-collapse:collapse;font-size:13px}
-  .week-table th{font-size:12px;font-weight:500;color:var(--text2);text-align:center;padding:8px 6px;border-bottom:0.5px solid var(--border);border-right:0.5px solid var(--border)}
-  .week-table th.proj-col{text-align:left;min-width:120px}
-  .week-table th:last-child{border-right:none}
-  .week-table td{padding:7px 6px;border-bottom:0.5px solid var(--border);border-right:0.5px solid var(--border);text-align:center;font-size:13px}
-  .week-table td.proj-col{text-align:left;font-weight:500}
-  .week-table td:last-child{border-right:none}
+  .week-table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+  .week-table th{font-size:12px;font-weight:500;color:var(--text2);text-align:left;padding:6px 8px;border-bottom:0.5px solid var(--border)}
+  .week-table td{padding:7px 8px;border-bottom:0.5px solid var(--border);overflow:hidden;text-overflow:ellipsis}
   .week-table tr:last-child td{border-bottom:none}
-  .week-table .total-row td{font-weight:500;background:var(--bg2)}
-  .week-cell-empty{color:var(--text3)}
+  .week-table .total-row td{font-weight:500;padding-top:10px}
 
   .progress-bar{height:4px;background:var(--border);border-radius:2px;margin-top:4px;overflow:hidden}
   .progress-fill{height:100%;border-radius:2px;transition:width .3s}
@@ -792,93 +787,29 @@ function renderWeek(){
   const wlEl=document.getElementById('week-label');
   if(wlEl)wlEl.textContent=weekLabel(currentWeekOffset);
   const dayNames=['Ma','Di','Wo','Do','Vr','Za','Zo'];
-  const td=today();
-
-  const projDayMins={};
-  const projTotals={};
-  const dayTotals={};
-  let grandTotal=0;
-  days.forEach(d=>{dayTotals[d]=0;});
-
-  entries.forEach(e=>{
-    if(!days.includes(e.date))return;
-    if(!projDayMins[e.projectId])projDayMins[e.projectId]={};
-    projDayMins[e.projectId][e.date]=(projDayMins[e.projectId][e.date]||0)+e.minutes;
-    projTotals[e.projectId]=(projTotals[e.projectId]||0)+e.minutes;
-    dayTotals[e.date]=(dayTotals[e.date]||0)+e.minutes;
-    grandTotal+=e.minutes;
-  });
-
-  const workDays=Math.max(1,days.slice(0,5).filter(d=>dayTotals[d]>0).length);
+  let totalMins=0;const dayMins={},projMins={};
+  days.forEach(d=>{dayMins[d]=0;});
+  entries.forEach(e=>{if(days.includes(e.date)){dayMins[e.date]=(dayMins[e.date]||0)+e.minutes;projMins[e.projectId]=(projMins[e.projectId]||0)+e.minutes;totalMins+=e.minutes;}});
+  const workDays=Math.max(1,days.slice(0,5).filter(d=>dayMins[d]>0).length);
   const wtEl=document.getElementById('wk-total');const waEl=document.getElementById('wk-avg');
-  if(wtEl)wtEl.textContent=fmtH(grandTotal);
-  if(waEl)waEl.textContent=fmtH(Math.round(grandTotal/workDays));
-
+  if(wtEl)wtEl.textContent=fmtH(totalMins);
+  if(waEl)waEl.textContent=fmtH(Math.round(totalMins/workDays));
   const table=document.getElementById('week-table');
   if(!table)return;
-
-  const projIds=Object.keys(projTotals).sort((a,b)=>{
-    const pa=getProjectById(a),pb=getProjectById(b);
-    if((pb.fav?1:0)!==(pa.fav?1:0))return(pb.fav?1:0)-(pa.fav?1:0);
-    return projTotals[b]-projTotals[a];
-  });
-
-  if(!projIds.length){
-    table.innerHTML=`<tbody><tr><td colspan="2" style="text-align:center;padding:1.5rem;color:var(--text2)">Geen boekingen deze week</td></tr></tbody>`;
-    const wpEl=document.getElementById('week-projects');
-    if(wpEl)wpEl.innerHTML='';
-    return;
-  }
-
-  // Header: Project | Ma 10/3 | Di 11/3 | ... | Totaal
-  let html=`<thead><tr><th class="proj-col">Project</th>`;
+  let rows=`<colgroup><col style="width:36px"><col style="width:56px"><col style="width:56px"><col></colgroup><thead><tr><th>Dag</th><th>Datum</th><th>Uren</th><th>Boekingen</th></tr></thead><tbody>`;
   days.forEach((d,i)=>{
-    const isToday=d===td;
-    html+=`<th style="${isToday?'background:rgba(55,138,221,.1)':''}">${dayNames[i]}<br><span style="font-weight:400;color:var(--text2)">${d.slice(8)}/${d.slice(5,7)}</span></th>`;
+    const mins=dayMins[d]||0;
+    const bookings=entries.filter(e=>e.date===d);
+    const detail=bookings.map(b=>{const p=getProjectById(b.projectId);return p.name+' ('+fmtH(b.minutes)+(b.pauseMinutes>0?' -'+b.pauseMinutes+'m':'')+')'}).join(', ')||'&#8212;';
+    rows+=`<tr style="${d===today()?'background:var(--bg2)':''}"><td style="color:var(--text2)">${dayNames[i]}</td><td>${d.slice(8)+'/'+d.slice(5,7)}</td><td style="font-weight:${mins>0?'500':'400'}">${mins>0?fmtH(mins):'&#8212;'}</td><td style="color:var(--text2);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${detail}</td></tr>`;
   });
-  html+=`<th>Totaal</th></tr></thead><tbody>`;
-
-  // One row per project — name only, no number
-  projIds.forEach(pid=>{
-    const p=getProjectById(pid);
-    html+=`<tr><td class="proj-col">${p.name}</td>`;
-    days.forEach(d=>{
-      const isToday=d===td;
-      const mins=(projDayMins[pid]&&projDayMins[pid][d])||0;
-      html+=`<td style="${isToday?'background:rgba(55,138,221,.07)':''}">`;
-      html+=mins>0?fmtH(mins):`<span class="week-cell-empty">—</span>`;
-      html+=`</td>`;
-    });
-    html+=`<td><strong>${fmtH(projTotals[pid])}</strong></td></tr>`;
-  });
-
-  // Totaal row
-  html+=`<tr class="total-row"><td class="proj-col">Totaal</td>`;
-  days.forEach(d=>{
-    const isToday=d===td;
-    const mins=dayTotals[d]||0;
-    html+=`<td style="${isToday?'background:rgba(55,138,221,.1)':''}">${mins>0?`<strong>${fmtH(mins)}</strong>`:`<span class="week-cell-empty">—</span>`}</td>`;
-  });
-  html+=`<td><strong>${fmtH(grandTotal)}</strong></td></tr></tbody>`;
-  table.innerHTML=html;
-
-  // Percentage bars below table
+  rows+=`<tr class="total-row"><td colspan="2">Totaal</td><td>${fmtH(totalMins)}</td><td></td></tr></tbody>`;
+  table.innerHTML=rows;
   const wpEl=document.getElementById('week-projects');
   if(!wpEl)return;
-  wpEl.innerHTML=projIds.map(pid=>{
-    const p=getProjectById(pid);
-    const mins=projTotals[pid];
-    const pct=grandTotal>0?Math.round(mins/grandTotal*100):0;
-    return`<div style="margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px">
-        <span style="font-weight:500">${p.name}</span>
-        <span style="color:var(--text2)">${fmtH(mins)} &bull; ${pct}%</span>
-      </div>
-      <div class="progress-bar">
-        <div class="progress-fill" style="width:${pct}%;background:var(--info)"></div>
-      </div>
-    </div>`;
-  }).join('');
+  const sorted=Object.entries(projMins).sort((a,b)=>b[1]-a[1]);
+  if(!sorted.length){wpEl.innerHTML='<div class="empty">Geen boekingen deze week</div>';return;}
+  wpEl.innerHTML=sorted.map(([pid,mins])=>{const p=getProjectById(pid);const pct=totalMins>0?Math.round(mins/totalMins*100):0;const numTag=p.num?` <span style="font-size:11px;color:var(--text2)">PR: ${p.num}</span>`:'';return`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px"><span><span style="font-weight:500">${p.name}</span>${numTag}</span><span style="color:var(--text2)">${fmtH(mins)} &bull; ${pct}%</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--info)"></div></div></div>`;}).join('');
 }
 
 function changeWeek(dir){currentWeekOffset+=dir;renderWeek();}
@@ -1014,7 +945,7 @@ async function sendInvite(){
 }
 function renderColleagues(invites){
   const el=document.getElementById('colleague-list');
-  if(!invites||!invites.length){el.innerHTML='<div class="empty" style="padding:.75rem 0">Nog geen collega's uitgenodigd</div>';return;}
+  if(!invites||!invites.length){el.innerHTML='<div class="empty" style="padding:.75rem 0">Nog geen collega&#39;s uitgenodigd</div>';return;}
   el.innerHTML=invites.map(i=>{
     const initials=i.email.slice(0,2).toUpperCase();
     return`<div class="colleague-row">
