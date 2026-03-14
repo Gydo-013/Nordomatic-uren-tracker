@@ -69,15 +69,19 @@
 
   /* App */
   #app-screen{display:none}
-  .topbar{display:flex;align-items:center;justify-content:space-between;padding:.75rem 0;margin-bottom:1rem;border-bottom:0.5px solid var(--border)}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:.75rem 0;margin-bottom:0;border-bottom:0.5px solid var(--border)}
   .topbar-title{font-size:16px;font-weight:500}
   .user-info{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px}
 
-  .nav{display:flex;gap:4px;margin-bottom:1.5rem;border-bottom:0.5px solid var(--border);padding-bottom:0}
+  .nav{display:flex;gap:4px;margin-bottom:0;border-bottom:0.5px solid var(--border);padding-bottom:0}
   .nav-btn{background:none;border:none;border-bottom:2px solid transparent;padding:8px 16px;font-size:14px;cursor:pointer;color:var(--text2);font-family:inherit;margin-bottom:-1px;transition:color .15s}
   .nav-btn.active{color:var(--text);border-bottom-color:var(--text);font-weight:500}
   .page{display:none}.page.active{display:block}
 
+  .sticky-header{position:sticky;top:0;z-index:100;background:var(--bg2);padding-bottom:0}
+  .sticky-header .topbar{background:var(--bg2)}
+  .sticky-header .nav{background:var(--bg2)}
+  .page-content{padding-top:1.5rem}
   .card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:1rem}
   .card-title{font-size:13px;font-weight:500;color:var(--text2);margin-bottom:.75rem}
 
@@ -255,22 +259,24 @@
 <!-- APP SCREEN -->
 <div id="app-screen">
   <div class="container">
-    <div class="topbar">
-      <div class="topbar-title">Uren Tracker</div>
-      <div class="user-info">
-        <button class="help-btn" onclick="openHelp()" title="Help">?</button>
-        <span id="user-email-display"></span>
-        <button class="btn-sm" onclick="signOut()">Uitloggen</button>
+    <div class="sticky-header">
+      <div class="topbar">
+        <div class="topbar-title">Uren Tracker</div>
+        <div class="user-info">
+          <button class="help-btn" onclick="openHelp()" title="Help">?</button>
+          <span id="user-email-display"></span>
+          <button class="btn-sm" onclick="signOut()">Uitloggen</button>
+        </div>
+      </div>
+      <div class="nav">
+        <button class="nav-btn active" onclick="showPage('registratie',this)">Registratie</button>
+        <button class="nav-btn" onclick="showPage('week',this)">Weekoverzicht</button>
+        <button class="nav-btn" onclick="showPage('projecten',this)">Projecten</button>
+        <button class="nav-btn" onclick="showPage('instellingen',this)">Instellingen</button>
       </div>
     </div>
 
-    <div class="nav">
-      <button class="nav-btn active" onclick="showPage('registratie',this)">Registratie</button>
-      <button class="nav-btn" onclick="showPage('week',this)">Weekoverzicht</button>
-      <button class="nav-btn" onclick="showPage('projecten',this)">Projecten</button>
-      <button class="nav-btn" onclick="showPage('instellingen',this)">Instellingen</button>
-    </div>
-
+    <div class="page-content">
     <!-- REGISTRATIE -->
     <div id="page-registratie" class="page active">
       <div class="stats">
@@ -483,6 +489,7 @@
 
     </div>
 
+    </div><!-- /page-content -->
   </div>
 </div>
 
@@ -877,10 +884,14 @@ function renderWeek(){
     const p=getProjectById(pid);
     const mins=projTotals[pid];
     const pct=grandTotal>0?Math.round(mins/grandTotal*100):0;
-    return`<div style="margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px">
-        <span style="font-weight:500">${p.name}</span>
-        <span style="color:var(--text2)">${fmtH(mins)} &bull; ${pct}%</span>
+    const meta=[p.num?'PR: '+p.num:'',p.fin?'Ref: '+p.fin:''].filter(Boolean).join(' • ');
+    return`<div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;font-size:13px;margin-bottom:3px">
+        <div>
+          <span style="font-weight:500">${p.name}</span>
+          ${meta?`<span style="font-size:11px;color:var(--text2);margin-left:6px">${meta}</span>`:''}
+        </div>
+        <span style="color:var(--text2);white-space:nowrap;margin-left:8px">${fmtH(mins)} &bull; ${pct}%</span>
       </div>
       <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--info)"></div></div>
     </div>`;
