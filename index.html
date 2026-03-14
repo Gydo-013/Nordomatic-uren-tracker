@@ -153,11 +153,16 @@
 
   .week-nav{display:flex;align-items:center;gap:12px;margin-bottom:1rem}
   .week-label{font-size:14px;font-weight:500;flex:1;text-align:center}
-  .week-table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
-  .week-table th{font-size:12px;font-weight:500;color:var(--text2);text-align:left;padding:6px 8px;border-bottom:0.5px solid var(--border)}
-  .week-table td{padding:7px 8px;border-bottom:0.5px solid var(--border);overflow:hidden;text-overflow:ellipsis}
+  .week-table{width:100%;border-collapse:collapse;font-size:13px}
+  .week-table th{font-size:12px;font-weight:500;color:var(--text2);text-align:center;padding:8px 6px;border-bottom:0.5px solid var(--border);border-right:0.5px solid var(--border)}
+  .week-table th.proj-col{text-align:left;min-width:120px}
+  .week-table th:last-child{border-right:none}
+  .week-table td{padding:7px 6px;border-bottom:0.5px solid var(--border);border-right:0.5px solid var(--border);text-align:center;font-size:13px}
+  .week-table td.proj-col{text-align:left;font-weight:500}
+  .week-table td:last-child{border-right:none}
   .week-table tr:last-child td{border-bottom:none}
-  .week-table .total-row td{font-weight:500;padding-top:10px}
+  .week-table .total-row td{font-weight:500;background:var(--bg2)}
+  .week-cell-empty{color:var(--text3)}
 
   .progress-bar{height:4px;background:var(--border);border-radius:2px;margin-top:4px;overflow:hidden}
   .progress-fill{height:100%;border-radius:2px;transition:width .3s}
@@ -197,10 +202,26 @@
   .status-pending{background:var(--warning-bg);color:var(--warning-text)}
   .status-active{background:var(--success-bg);color:var(--success-text)}
   .invite-row{display:flex;gap:8px;margin-top:.75rem}
+  .help-btn{width:28px;height:28px;border-radius:50%;border:0.5px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;transition:all .15s;flex-shrink:0;line-height:1}
+  .help-btn:hover{background:var(--info-bg);color:var(--info-text);border-color:var(--info)}
+  .help-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:2000;display:flex;align-items:flex-start;justify-content:flex-end;padding:60px 1rem 1rem}
+  .help-panel{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);width:100%;max-width:480px;max-height:calc(100vh - 80px);overflow-y:auto}
+  .help-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:0.5px solid var(--border);position:sticky;top:0;background:var(--bg);border-radius:var(--radius-lg) var(--radius-lg) 0 0;z-index:1}
+  .help-title-text{font-size:16px;font-weight:500}
+  .help-body{padding:1.25rem}
+  .help-section{margin-bottom:1.5rem}
+  .help-section:last-child{margin-bottom:0}
+  .help-section-title{font-size:12px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.75rem}
+  .help-item{margin-bottom:.75rem;font-size:13px;line-height:1.6}
+  .help-item strong{color:var(--text);font-weight:500;display:block;margin-bottom:2px}
+  .help-item p{color:var(--text2);margin:0}
+  .help-tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:4px;background:var(--bg2);border:0.5px solid var(--border2);font-family:monospace;margin:0 2px}
   @media(max-width:600px){
     .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
     .entry-note,.entry-time{display:none}
     .timer-display{font-size:24px}
+    .help-overlay{padding:0}
+    .help-panel{max-width:100%;max-height:100vh;border-radius:0}
   }
 </style>
 </head>
@@ -237,6 +258,7 @@
     <div class="topbar">
       <div class="topbar-title">Uren Tracker</div>
       <div class="user-info">
+        <button class="help-btn" onclick="openHelp()" title="Help">?</button>
         <span id="user-email-display"></span>
         <button class="btn-sm" onclick="signOut()">Uitloggen</button>
       </div>
@@ -787,29 +809,82 @@ function renderWeek(){
   const wlEl=document.getElementById('week-label');
   if(wlEl)wlEl.textContent=weekLabel(currentWeekOffset);
   const dayNames=['Ma','Di','Wo','Do','Vr','Za','Zo'];
-  let totalMins=0;const dayMins={},projMins={};
-  days.forEach(d=>{dayMins[d]=0;});
-  entries.forEach(e=>{if(days.includes(e.date)){dayMins[e.date]=(dayMins[e.date]||0)+e.minutes;projMins[e.projectId]=(projMins[e.projectId]||0)+e.minutes;totalMins+=e.minutes;}});
-  const workDays=Math.max(1,days.slice(0,5).filter(d=>dayMins[d]>0).length);
+  const td=today();
+
+  const projDayMins={},projTotals={},dayTotals={};
+  let grandTotal=0;
+  days.forEach(d=>{dayTotals[d]=0;});
+  entries.forEach(e=>{
+    if(!days.includes(e.date))return;
+    if(!projDayMins[e.projectId])projDayMins[e.projectId]={};
+    projDayMins[e.projectId][e.date]=(projDayMins[e.projectId][e.date]||0)+e.minutes;
+    projTotals[e.projectId]=(projTotals[e.projectId]||0)+e.minutes;
+    dayTotals[e.date]=(dayTotals[e.date]||0)+e.minutes;
+    grandTotal+=e.minutes;
+  });
+
+  const workDays=Math.max(1,days.slice(0,5).filter(d=>dayTotals[d]>0).length);
   const wtEl=document.getElementById('wk-total');const waEl=document.getElementById('wk-avg');
-  if(wtEl)wtEl.textContent=fmtH(totalMins);
-  if(waEl)waEl.textContent=fmtH(Math.round(totalMins/workDays));
+  if(wtEl)wtEl.textContent=fmtH(grandTotal);
+  if(waEl)waEl.textContent=fmtH(Math.round(grandTotal/workDays));
+
   const table=document.getElementById('week-table');
   if(!table)return;
-  let rows=`<colgroup><col style="width:36px"><col style="width:56px"><col style="width:56px"><col></colgroup><thead><tr><th>Dag</th><th>Datum</th><th>Uren</th><th>Boekingen</th></tr></thead><tbody>`;
-  days.forEach((d,i)=>{
-    const mins=dayMins[d]||0;
-    const bookings=entries.filter(e=>e.date===d);
-    const detail=bookings.map(b=>{const p=getProjectById(b.projectId);return p.name+' ('+fmtH(b.minutes)+(b.pauseMinutes>0?' -'+b.pauseMinutes+'m':'')+')'}).join(', ')||'&#8212;';
-    rows+=`<tr style="${d===today()?'background:var(--bg2)':''}"><td style="color:var(--text2)">${dayNames[i]}</td><td>${d.slice(8)+'/'+d.slice(5,7)}</td><td style="font-weight:${mins>0?'500':'400'}">${mins>0?fmtH(mins):'&#8212;'}</td><td style="color:var(--text2);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${detail}</td></tr>`;
+
+  const projIds=Object.keys(projTotals).sort((a,b)=>{
+    const pa=getProjectById(a),pb=getProjectById(b);
+    if((pb.fav?1:0)!==(pa.fav?1:0))return(pb.fav?1:0)-(pa.fav?1:0);
+    return projTotals[b]-projTotals[a];
   });
-  rows+=`<tr class="total-row"><td colspan="2">Totaal</td><td>${fmtH(totalMins)}</td><td></td></tr></tbody>`;
-  table.innerHTML=rows;
+
+  if(!projIds.length){
+    table.innerHTML='<tbody><tr><td style="text-align:center;padding:1.5rem;color:var(--text2)">Geen boekingen deze week</td></tr></tbody>';
+    const wpEl=document.getElementById('week-projects');
+    if(wpEl)wpEl.innerHTML='';
+    return;
+  }
+
+  let html='<thead><tr><th class="proj-col">Project</th>';
+  days.forEach((d,i)=>{
+    const isToday=d===td;
+    html+=`<th style="${isToday?'background:rgba(55,138,221,.1)':''}">${dayNames[i]}<br><span style="font-weight:400;color:var(--text2)">${d.slice(8)}/${d.slice(5,7)}</span></th>`;
+  });
+  html+='<th>Totaal</th></tr></thead><tbody>';
+
+  projIds.forEach(pid=>{
+    const p=getProjectById(pid);
+    html+=`<tr><td class="proj-col">${p.name}</td>`;
+    days.forEach(d=>{
+      const isToday=d===td;
+      const mins=(projDayMins[pid]&&projDayMins[pid][d])||0;
+      html+=`<td style="${isToday?'background:rgba(55,138,221,.07)':''}">${mins>0?fmtH(mins):'<span class="week-cell-empty">&#8212;</span>'}</td>`;
+    });
+    html+=`<td><strong>${fmtH(projTotals[pid])}</strong></td></tr>`;
+  });
+
+  html+='<tr class="total-row"><td class="proj-col">Totaal</td>';
+  days.forEach(d=>{
+    const isToday=d===td;
+    const mins=dayTotals[d]||0;
+    html+=`<td style="${isToday?'background:rgba(55,138,221,.1)':''}">${mins>0?`<strong>${fmtH(mins)}</strong>`:'<span class="week-cell-empty">&#8212;</span>'}</td>`;
+  });
+  html+=`<td><strong>${fmtH(grandTotal)}</strong></td></tr></tbody>`;
+  table.innerHTML=html;
+
   const wpEl=document.getElementById('week-projects');
   if(!wpEl)return;
-  const sorted=Object.entries(projMins).sort((a,b)=>b[1]-a[1]);
-  if(!sorted.length){wpEl.innerHTML='<div class="empty">Geen boekingen deze week</div>';return;}
-  wpEl.innerHTML=sorted.map(([pid,mins])=>{const p=getProjectById(pid);const pct=totalMins>0?Math.round(mins/totalMins*100):0;const numTag=p.num?` <span style="font-size:11px;color:var(--text2)">PR: ${p.num}</span>`:'';return`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px"><span><span style="font-weight:500">${p.name}</span>${numTag}</span><span style="color:var(--text2)">${fmtH(mins)} &bull; ${pct}%</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--info)"></div></div></div>`;}).join('');
+  wpEl.innerHTML=projIds.map(pid=>{
+    const p=getProjectById(pid);
+    const mins=projTotals[pid];
+    const pct=grandTotal>0?Math.round(mins/grandTotal*100):0;
+    return`<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px">
+        <span style="font-weight:500">${p.name}</span>
+        <span style="color:var(--text2)">${fmtH(mins)} &bull; ${pct}%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--info)"></div></div>
+    </div>`;
+  }).join('');
 }
 
 function changeWeek(dir){currentWeekOffset+=dir;renderWeek();}
@@ -1032,5 +1107,76 @@ function renderColleagues(invites){
     </div>
   </div>
 </div>
+<!-- HELP PANEL -->
+<div id="help-overlay" class="help-overlay" style="display:none" onclick="if(event.target===this)closeHelp()">
+  <div class="help-panel">
+    <div class="help-header">
+      <div class="help-title-text">Hoe werkt de app?</div>
+      <button class="btn-sm" onclick="closeHelp()">&#10005; Sluiten</button>
+    </div>
+    <div class="help-body">
+
+      <div class="help-section">
+        <div class="help-section-title">Aan de slag</div>
+        <div class="help-item"><strong>1. Maak eerst projecten aan</strong><p>Ga naar <span class="help-tag">Projecten</span> en voeg projecten toe met naam, projectnummer (PR) en referentie (TX). Stel een urentegoed in om bij te houden hoeveel uren beschikbaar zijn.</p></div>
+        <div class="help-item"><strong>2. Registreer uren</strong><p>Ga naar <span class="help-tag">Registratie</span>. Gebruik de start/stop timer of handmatige invoer. Kies je geen project, dan worden uren automatisch onder <em>Intern</em> geboekt.</p></div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">Start / Stop timer</div>
+        <div class="help-item"><strong>Starten</strong><p>Kies een project en druk op <span class="help-tag">Start</span>. Laat je het project leeg, dan wordt automatisch <em>Intern</em> gebruikt.</p></div>
+        <div class="help-item"><strong>Stoppen</strong><p>Druk op <span class="help-tag">Stop</span>. De boeking wordt direct opgeslagen.</p></div>
+        <div class="help-item"><strong>Project wisselen</strong><p>Kies een volgend project en druk op <span class="help-tag">Volgende</span>. Het huidige project stopt direct en het nieuwe begint &mdash; zonder verloren tijd.</p></div>
+        <div class="help-item"><strong>Pauze</strong><p>Zet de <span class="help-tag">Pauze</span> toggle aan v&oacute;&oacute;r het stoppen. De ingestelde pauzetijd wordt automatisch afgetrokken. De standaard pauzetijd stel je in via <span class="help-tag">Instellingen</span>.</p></div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">Handmatige invoer</div>
+        <div class="help-item"><strong>Terugwerkende registraties</strong><p>Klik op de kop <em>Handmatige invoer</em> om het formulier uit te klappen. Vul datum, project, begin- en eindtijd in en druk op <span class="help-tag">Toevoegen</span>.</p></div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">Boekingen beheren</div>
+        <div class="help-item"><strong>Sorteren</strong><p>Klik op <span class="help-tag">Datum</span>, <span class="help-tag">Tijd</span> of <span class="help-tag">Project</span> boven de lijst.</p></div>
+        <div class="help-item"><strong>Aanpassen</strong><p>Klik op het potlood-icoon &#9998; naast een boeking om deze te wijzigen.</p></div>
+        <div class="help-item"><strong>Verwijderen</strong><p>Klik op het kruisje &#10005; naast een boeking.</p></div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">Weekoverzicht</div>
+        <div class="help-item"><strong>Matrix per project</strong><p>Rijen zijn projecten, kolommen zijn dagen. Onderaan zie je de uren per dag en het totaal. De percentagebalk toont hoe de weekuren verdeeld zijn over projecten.</p></div>
+        <div class="help-item"><strong>Bladeren</strong><p>Gebruik de pijltjes &#8592; &#8594; om door weken te navigeren. De huidige dag is blauw gemarkeerd.</p></div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">Projecten</div>
+        <div class="help-item"><strong>Favoriet</strong><p>Klik op de ster &#9733; om een project als favoriet te markeren. Favorieten staan bovenaan in alle dropdowns.</p></div>
+        <div class="help-item"><strong>Aanpassen</strong><p>Klik op het potlood-icoon &#9998; naast een project om gegevens te wijzigen.</p></div>
+        <div class="help-item"><strong>Voortgang</strong><p>De gekleurde balk toont hoeveel van het urentegoed al verbruikt is: groen = ok, oranje = bijna op, rood = overschreden.</p></div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">Instellingen</div>
+        <div class="help-item"><strong>Profiel &amp; wachtwoord</strong><p>Wijzig je naam of wachtwoord via het tabblad <span class="help-tag">Instellingen</span>.</p></div>
+        <div class="help-item"><strong>Thema</strong><p>Kies Licht, Donker of Systeem. De keuze wordt opgeslagen.</p></div>
+        <div class="help-item"><strong>Werkdagen &amp; uren</strong><p>Stel in welke dagen je werkt en hoeveel uur per dag. De standaard pauzetijd is ook hier instelbaar.</p></div>
+        <div class="help-item"><strong>Collega&#39;s uitnodigen</strong><p>Voer het e-mailadres in en klik Uitnodigen. Collega&#39;s maken via dezelfde link een eigen account aan. Ieders data staat volledig los.</p></div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">Data &amp; privacy</div>
+        <div class="help-item"><strong>Veilige opslag</strong><p>Alle gegevens staan in Firebase (Google Cloud). Alleen jij hebt toegang tot jouw data. Data blijft bewaard als je de app bijwerkt.</p></div>
+        <div class="help-item"><strong>Overal beschikbaar</strong><p>Werkt op telefoon, tablet en laptop. Voeg de URL toe als bladwijzer of gebruik <em>Voeg toe aan beginscherm</em> voor snelle toegang.</p></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function openHelp(){document.getElementById('help-overlay').style.display='flex';}
+function closeHelp(){document.getElementById('help-overlay').style.display='none';}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeHelp();});
+</script>
 </body>
 </html>
