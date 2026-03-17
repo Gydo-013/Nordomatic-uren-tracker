@@ -1185,9 +1185,82 @@ function renderColleagues(invites){
 </div>
 
 <script>
+// ── Edit entry ────────────────────────────────────────────
+function openEditEntry(id){
+  const e=entries.find(x=>x.id===id);
+  if(!e)return;
+  document.getElementById('edit-id').value=id;
+  document.getElementById('edit-date').value=e.date||'';
+  document.getElementById('edit-start').value=e.startTime||'';
+  document.getElementById('edit-end').value=e.endTime||'';
+  document.getElementById('edit-pause').value=e.pauseMinutes||0;
+  document.getElementById('edit-note').value=e.note||'';
+  const sorted=[...projects].sort((a,b)=>(b.fav?1:0)-(a.fav?1:0)||a.name.localeCompare(b.name));
+  const opts='<option value="">-- Kies project --</option>'+sorted.map(p=>`<option value="${p.id}">${p.fav?'★ ':''}${p.name}</option>`).join('');
+  document.getElementById('edit-project').innerHTML=opts;
+  document.getElementById('edit-project').value=e.projectId||'';
+  document.getElementById('edit-modal').style.display='flex';
+}
+function closeEditEntry(){document.getElementById('edit-modal').style.display='none';}
+async function saveEditEntry(){
+  const id=document.getElementById('edit-id').value;
+  const date=document.getElementById('edit-date').value;
+  const pid=document.getElementById('edit-project').value;
+  const s=document.getElementById('edit-start').value;
+  const en=document.getElementById('edit-end').value;
+  const pause=parseInt(document.getElementById('edit-pause').value)||0;
+  const note=document.getElementById('edit-note').value.trim();
+  if(!date||!s||!en)return;
+  const usePid=pid||(await getOrCreateInternId());
+  const[sh,sm]=s.split(':').map(Number);
+  const[eh,em]=en.split(':').map(Number);
+  const rawMins=(eh*60+em)-(sh*60+sm);
+  if(rawMins<=0)return;
+  await db.collection('users').doc(currentUser.uid).collection('entries').doc(id).update({
+    date,projectId:usePid,startTime:s,endTime:en,
+    minutes:Math.max(0,rawMins-pause),pauseMinutes:pause,note
+  });
+  closeEditEntry();
+}
+document.getElementById('edit-modal').addEventListener('click',function(e){if(e.target===this)closeEditEntry();});
+
+// ── Edit project ──────────────────────────────────────────
+function openEditProject(id){
+  const p=projects.find(x=>x.id===id);
+  if(!p)return;
+  document.getElementById('ep-id').value=id;
+  document.getElementById('ep-name').value=p.name||'';
+  document.getElementById('ep-num').value=p.num||'';
+  document.getElementById('ep-fin').value=p.fin||'';
+  document.getElementById('ep-budget').value=p.budget||'';
+  document.getElementById('edit-proj-modal').style.display='flex';
+}
+function closeEditProject(){document.getElementById('edit-proj-modal').style.display='none';}
+async function saveEditProject(){
+  const id=document.getElementById('ep-id').value;
+  const name=document.getElementById('ep-name').value.trim();
+  if(!name)return;
+  await db.collection('users').doc(currentUser.uid).collection('projects').doc(id).update({
+    name,
+    num:document.getElementById('ep-num').value.trim(),
+    fin:document.getElementById('ep-fin').value.trim(),
+    budget:parseInt(document.getElementById('ep-budget').value)||0
+  });
+  closeEditProject();
+}
+document.getElementById('edit-proj-modal').addEventListener('click',function(e){if(e.target===this)closeEditProject();});
+
+// ── Favourites ────────────────────────────────────────────
+function toggleFav(id){
+  const p=projects.find(x=>x.id===id);
+  if(!p)return;
+  db.collection('users').doc(currentUser.uid).collection('projects').doc(id).update({fav:!p.fav});
+}
+
+// ── Help ──────────────────────────────────────────────────
 function openHelp(){document.getElementById('help-overlay').style.display='flex';}
 function closeHelp(){document.getElementById('help-overlay').style.display='none';}
-document.addEventListener('keydown',function(e){if(e.key==='Escape')closeHelp();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeHelp();closeEditEntry();closeEditProject();}});
 </script>
 </body>
 </html>
