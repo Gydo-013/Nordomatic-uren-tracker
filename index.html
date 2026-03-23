@@ -620,6 +620,19 @@ async function deleteProjectDb(id){
 // ── Helpers ───────────────────────────────────────────────
 function today(){return new Date().toISOString().slice(0,10)}
 function fmtH(mins){if(mins===0)return'0u';const h=Math.floor(mins/60),m=mins%60;return m>0?h+'u '+m+'m':h+'u'}
+function fmtDays(mins){
+  const hpd=userSettings.hoursPerDay||8;
+  const minsPerDay=hpd*60;
+  const days=Math.floor(mins/minsPerDay);
+  const rem=mins%minsPerDay;
+  const h=Math.floor(rem/60);
+  const m=rem%60;
+  let parts=[];
+  if(days>0)parts.push(days+'d');
+  if(h>0)parts.push(h+'u');
+  if(m>0)parts.push(m+'m');
+  return parts.length?parts.join(' '):'0m';
+}
 function timeStr(d){return d.toTimeString().slice(0,5)}
 function fmtSecs(s){return String(Math.floor(s/3600)).padStart(2,'0')+':'+String(Math.floor((s%3600)/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
 
@@ -880,18 +893,23 @@ function renderWeek(){
 
   const wpEl=document.getElementById('week-projects');
   if(!wpEl)return;
+  const hpd=userSettings.hoursPerDay||8;
   wpEl.innerHTML=projIds.map(pid=>{
     const p=getProjectById(pid);
     const mins=projTotals[pid];
     const pct=grandTotal>0?Math.round(mins/grandTotal*100):0;
     const meta=[p.num?'PR: '+p.num:'',p.fin?'Ref: '+p.fin:''].filter(Boolean).join(' • ');
-    return`<div style="margin-bottom:12px">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;font-size:13px;margin-bottom:3px">
+    const days=fmtDays(mins);
+    return`<div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;font-size:13px;margin-bottom:4px">
         <div>
           <span style="font-weight:500">${p.name}</span>
           ${meta?`<span style="font-size:11px;color:var(--text2);margin-left:6px">${meta}</span>`:''}
         </div>
-        <span style="color:var(--text2);white-space:nowrap;margin-left:8px">${fmtH(mins)} &bull; ${pct}%</span>
+        <div style="text-align:right;white-space:nowrap;margin-left:8px">
+          <span style="color:var(--text2)">${fmtH(mins)} &bull; ${pct}%</span><br>
+          <span style="font-size:12px;color:var(--text-info,var(--info));font-weight:500">${days} <span style="font-weight:400;color:var(--text2)">(a ${hpd}u/dag)</span></span>
+        </div>
       </div>
       <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--info)"></div></div>
     </div>`;
