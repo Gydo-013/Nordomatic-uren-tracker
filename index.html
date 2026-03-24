@@ -292,19 +292,19 @@
             <div class="timer-display timer-idle" id="timer-disp">00:00:00</div>
             <div class="field" style="flex:2;min-width:150px">
               <label>Project</label>
-              <select id="t-project"><option value="">-- Kies project (leeg = Intern) --</option></select>
+              <select id="t-project" onchange="updateNoteSuggestions()"><option value="">-- Kies project (leeg = Intern) --</option></select>
             </div>
             <div class="field" style="flex:1.5;min-width:120px">
               <label>Omschrijving</label>
-              <input type="text" id="t-note" placeholder="Optioneel">
+              <input type="text" id="t-note" placeholder="Optioneel" list="dl-t-note" autocomplete="off">
             </div>
             <div class="field" style="flex:1.5;min-width:130px">
               <label>Volgend project</label>
-              <select id="t-next-project"><option value="">-- Kies project (leeg = Intern) --</option></select>
+              <select id="t-next-project" onchange="updateNoteSuggestions()"><option value="">-- Kies project (leeg = Intern) --</option></select>
             </div>
             <div class="field" style="flex:1.5;min-width:120px">
               <label>Opmerking volgend</label>
-              <input type="text" id="t-next-note" placeholder="Optioneel">
+              <input type="text" id="t-next-note" placeholder="Optioneel" list="dl-t-next-note" autocomplete="off">
             </div>
             <div class="btn-group">
               <button class="btn btn-green btn-inline" id="btn-start" onclick="startTimer()">Start</button>
@@ -344,12 +344,12 @@
           <div class="row">
             <div class="field"><label>Datum</label><input type="date" id="m-date" style="width:140px"></div>
             <div class="field" style="flex:1.5;min-width:140px"><label>Project</label>
-              <select id="m-project"><option value="">-- Kies project (leeg = Intern) --</option></select>
+              <select id="m-project" onchange="updateNoteSuggestions()"><option value="">-- Kies project (leeg = Intern) --</option></select>
             </div>
             <div class="field"><label>Van</label><input type="time" id="m-start" value="09:00" style="width:100px"></div>
             <div class="field"><label>Tot</label><input type="time" id="m-end" value="17:00" style="width:100px"></div>
             <div class="field"><label>Pauze (min)</label><input type="number" id="m-pause" value="0" min="0" style="width:80px"></div>
-            <div class="field" style="flex:1;min-width:100px"><label>Omschrijving</label><input type="text" id="m-note" placeholder="Optioneel"></div>
+            <div class="field" style="flex:1;min-width:100px"><label>Omschrijving</label><input type="text" id="m-note" placeholder="Optioneel" list="dl-m-note" autocomplete="off"></div>
             <button class="btn btn-inline" onclick="addManual()">Toevoegen</button>
           </div>
         </div>
@@ -766,6 +766,33 @@ function populateSelects(){
   const opts='<option value="">-- Kies project (leeg = Intern) --</option>'+sorted.map(p=>`<option value="${p.id}">${p.fav?'★ ':''}${p.name}</option>`).join('');
   ['t-project','t-next-project','m-project'].forEach(id=>document.getElementById(id).innerHTML=opts);
   if(timerProjectId)document.getElementById('t-project').value=timerProjectId;
+  updateNoteSuggestions();
+}
+
+function getNotesForProject(pid){
+  if(!pid)return[];
+  const weekDays=getWeekDates(0);
+  const notes=[...new Set(
+    entries
+      .filter(e=>e.projectId===pid && weekDays.includes(e.date) && e.note && e.note.trim())
+      .map(e=>e.note.trim())
+  )];
+  return notes;
+}
+
+function fillDatalist(dlId, notes){
+  const dl=document.getElementById(dlId);
+  if(!dl)return;
+  dl.innerHTML=notes.map(n=>`<option value="${n.replace(/"/g,'&quot;')}">`).join('');
+}
+
+function updateNoteSuggestions(){
+  const tPid=document.getElementById('t-project')?.value;
+  const tNextPid=document.getElementById('t-next-project')?.value;
+  const mPid=document.getElementById('m-project')?.value;
+  fillDatalist('dl-t-note', getNotesForProject(tPid));
+  fillDatalist('dl-t-next-note', getNotesForProject(tNextPid));
+  fillDatalist('dl-m-note', getNotesForProject(mPid));
 }
 
 function renderAll(){populateSelects();renderStats();renderEntries();renderWeek();renderProjects();}
@@ -1082,6 +1109,11 @@ function renderColleagues(invites){
 
 
 </script>
+<datalist id="dl-t-note"></datalist>
+<datalist id="dl-t-next-note"></datalist>
+<datalist id="dl-m-note"></datalist>
+<datalist id="dl-edit-note"></datalist>
+
 <!-- EDIT ENTRY MODAL -->
 <div id="edit-modal" class="modal-overlay" style="display:none">
   <div class="modal-box">
@@ -1089,7 +1121,7 @@ function renderColleagues(invites){
     <input type="hidden" id="edit-id">
     <div class="modal-row">
       <div class="field"><label>Datum</label><input type="date" id="edit-date" style="width:140px"></div>
-      <div class="field" style="flex:1.5;min-width:140px"><label>Project</label><select id="edit-project"></select></div>
+      <div class="field" style="flex:1.5;min-width:140px"><label>Project</label><select id="edit-project" onchange="fillDatalist('dl-edit-note', getNotesForProject(this.value))"></select></div>
     </div>
     <div class="modal-row">
       <div class="field"><label>Van</label><input type="time" id="edit-start" style="width:100px"></div>
@@ -1097,7 +1129,7 @@ function renderColleagues(invites){
       <div class="field"><label>Pauze (min)</label><input type="number" id="edit-pause" min="0" style="width:80px"></div>
     </div>
     <div class="modal-row">
-      <div class="field" style="flex:1"><label>Omschrijving</label><input type="text" id="edit-note" placeholder="Optioneel"></div>
+      <div class="field" style="flex:1"><label>Omschrijving</label><input type="text" id="edit-note" placeholder="Optioneel" list="dl-edit-note" autocomplete="off"></div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-outline btn-inline" onclick="closeEditEntry()">Annuleren</button>
@@ -1237,6 +1269,7 @@ function openEditEntry(id){
   const opts='<option value="">-- Kies project --</option>'+sorted.map(p=>`<option value="${p.id}">${p.fav?'★ ':''}${p.name}</option>`).join('');
   document.getElementById('edit-project').innerHTML=opts;
   document.getElementById('edit-project').value=e.projectId||'';
+  fillDatalist('dl-edit-note', getNotesForProject(e.projectId||''));
   document.getElementById('edit-modal').style.display='flex';
 }
 function closeEditEntry(){document.getElementById('edit-modal').style.display='none';}
