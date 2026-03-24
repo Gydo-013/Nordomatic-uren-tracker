@@ -899,8 +899,27 @@ function renderWeek(){
     const mins=projTotals[pid];
     const pct=grandTotal>0?Math.round(mins/grandTotal*100):0;
     const meta=[p.num?'PR: '+p.num:'',p.fin?'Ref: '+p.fin:''].filter(Boolean).join(' • ');
-    const days=fmtDays(mins);
-    return`<div style="margin-bottom:14px">
+    const daysFmt=fmtDays(mins);
+
+    // Group entries for this project this week by note
+    const weekEntries=entries.filter(e=>days.includes(e.date)&&e.projectId===pid);
+    const noteMap={};
+    weekEntries.forEach(e=>{
+      const key=(e.note&&e.note.trim())||'—';
+      noteMap[key]=(noteMap[key]||0)+e.minutes;
+    });
+    const noteKeys=Object.keys(noteMap).sort((a,b)=>noteMap[b]-noteMap[a]);
+
+    const notesHtml=noteKeys.map(k=>{
+      const nm=noteMap[k];
+      const npct=mins>0?Math.round(nm/mins*100):0;
+      return`<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);padding:3px 0 3px 12px;border-left:2px solid var(--border2)">
+        <span style="font-style:${k==='—'?'italic':'normal'}">${k}</span>
+        <span style="white-space:nowrap;margin-left:8px">${fmtH(nm)} &bull; ${fmtDays(nm)} &bull; ${npct}%</span>
+      </div>`;
+    }).join('');
+
+    return`<div style="margin-bottom:16px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;font-size:13px;margin-bottom:4px">
         <div>
           <span style="font-weight:500">${p.name}</span>
@@ -908,10 +927,11 @@ function renderWeek(){
         </div>
         <div style="text-align:right;white-space:nowrap;margin-left:8px">
           <span style="color:var(--text2)">${fmtH(mins)} &bull; ${pct}%</span><br>
-          <span style="font-size:12px;color:var(--text-info,var(--info));font-weight:500">${days} <span style="font-weight:400;color:var(--text2)">(a ${hpd}u/dag)</span></span>
+          <span style="font-size:12px;color:var(--info);font-weight:500">${daysFmt} <span style="font-weight:400;color:var(--text2)">(a ${hpd}u/dag)</span></span>
         </div>
       </div>
-      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--info)"></div></div>
+      <div class="progress-bar" style="margin-bottom:6px"><div class="progress-fill" style="width:${pct}%;background:var(--info)"></div></div>
+      ${notesHtml}
     </div>`;
   }).join('');
 }
